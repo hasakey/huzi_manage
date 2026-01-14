@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { reviewWithdrawal } from "@/app/admin/actions";
+import { reviewTransaction } from "@/app/admin/actions";
 import { logServerAction } from "@/app/utils/client-action-logger";
 import {
   Dialog,
@@ -39,8 +39,8 @@ export default function ReviewWithdrawalDialog({
     startTransition(async () => {
       try {
         const result = await logServerAction(
-          "审核提现请求",
-          reviewWithdrawal,
+          "审核交易请求",
+          reviewTransaction,
           transaction.id,
           action
         );
