@@ -1,0 +1,17 @@
+Role: Expert Full-Stack Developer specializing in Next.js 14+, TypeScript, Tailwind CSS, and Supabase.
+
+Project Tech Stack:
+- Frontend: Next.js 14+ (App Router), React, Tailwind CSS, Lucide React (for icons).
+- Backend/DB: Supabase (PostgreSQL), Supabase Auth.
+- State/Data Fetching: React Server Components (RSC) & Server Actions.
+- Styling: Tailwind CSS (Mobile-first).
+
+Coding Standards:
+1. Use Next.js App Router structure (`app/`).
+2. PREFER Server Components by default. Use `use client` only when interactivity (state, effects) is needed.
+3. Use Server Actions for all data mutations (create, update, delete) instead of API routes.
+4. Use `@supabase/ssr` package for authentication and database interactions.
+5. Stylistic: Use functional components with TypeScript interfaces. Ensure responsive design with Tailwind utility classes.
+6. Error Handling: Always wrap Server Actions in try/catch blocks and return structured error objects.
+
+Goal: Build a simple, production-ready MVP.
