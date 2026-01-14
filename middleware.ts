@@ -9,14 +9,9 @@ export async function middleware(request: NextRequest) {
   const { supabaseResponse, user } = await updateSession(request);
   const { pathname } = request.nextUrl;
 
-  // 保护需要认证的路由
-  const protectedRoutes = ["/"];
-  const authRoutes = ["/login"];
-
-  const isProtectedRoute = protectedRoutes.some((route) =>
-    pathname.startsWith(route)
-  );
-  const isAuthRoute = authRoutes.some((route) => pathname.startsWith(route));
+  // 保护需要认证的路由（使用精确匹配，避免匹配所有路径）
+  const isProtectedRoute = pathname === "/";
+  const isAuthRoute = pathname === "/login";
 
   // 如果访问受保护的路由但未登录，重定向到登录页
   if (isProtectedRoute && !user) {

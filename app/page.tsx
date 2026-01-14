@@ -3,17 +3,22 @@ import { getCurrentUser } from "@/app/auth/utils";
 import AddTodo from "@/app/components/AddTodo";
 import LogoutButton from "@/app/components/LogoutButton";
 import TodoItem from "@/app/components/TodoItem";
-import { redirect } from "next/navigation";
 
 export default async function Home() {
+  // Middleware 已经处理了路由保护，这里不需要再次重定向
   const user = await getCurrentUser();
-
-  // 如果未登录，重定向到登录页面
-  if (!user) {
-    redirect("/login");
-  }
-
   const result = await getTodos();
+
+  // 如果获取用户失败（虽然 middleware 应该已经处理了），显示错误
+  if (!user) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <p className="text-red-600">未登录，请先登录</p>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
