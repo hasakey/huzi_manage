@@ -48,8 +48,8 @@ export default function SystemChart({ data }: SystemChartProps) {
             borderRadius: "8px",
             padding: "8px 12px",
           }}
-          formatter={(value: number, name: string) => [
-            `¥${value.toFixed(2)}`,
+          formatter={(value: number | undefined, name: string) => [
+            `¥${(value || 0).toFixed(2)}`,
             name === "deposit" ? "充值" : "提现",
           ]}
           labelFormatter={(label) => `日期: ${label}`}
