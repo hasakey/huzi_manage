@@ -2,6 +2,7 @@
 
 import { createServerActionClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
+import { wrapServerAction } from "@/app/utils/server-action-wrapper";
 
 export interface Todo {
   id: string;
@@ -18,10 +19,10 @@ export interface ActionResult<T = void> {
 }
 
 /**
- * 获取当前用户的待办列表
+ * 获取当前用户的待办列表 - 内部实现
  * 可以在 Server Component 中直接调用
  */
-export async function getTodos(): Promise<ActionResult<Todo[]>> {
+async function _getTodos(): Promise<ActionResult<Todo[]>> {
   try {
     const supabase = await createServerActionClient();
 
@@ -65,10 +66,10 @@ export async function getTodos(): Promise<ActionResult<Todo[]>> {
 }
 
 /**
- * 添加新的待办事项
+ * 添加新的待办事项 - 内部实现
  * @param formData 包含 title 字段的表单数据
  */
-export async function addTodo(formData: FormData): Promise<ActionResult<Todo>> {
+async function _addTodo(formData: FormData): Promise<ActionResult<Todo>> {
   try {
     const supabase = await createServerActionClient();
 
@@ -129,11 +130,11 @@ export async function addTodo(formData: FormData): Promise<ActionResult<Todo>> {
 }
 
 /**
- * 切换待办事项的完成状态
+ * 切换待办事项的完成状态 - 内部实现
  * @param id 待办事项的 ID
  * @param currentStatus 当前的完成状态
  */
-export async function toggleTodo(
+async function _toggleTodo(
   id: string,
   currentStatus: boolean
 ): Promise<ActionResult<Todo>> {
@@ -199,10 +200,10 @@ export async function toggleTodo(
 }
 
 /**
- * 删除待办事项
+ * 删除待办事项 - 内部实现
  * @param id 待办事项的 ID
  */
-export async function deleteTodo(id: string): Promise<ActionResult<void>> {
+async function _deleteTodo(id: string): Promise<ActionResult<void>> {
   try {
     const supabase = await createServerActionClient();
 
@@ -253,3 +254,23 @@ export async function deleteTodo(id: string): Promise<ActionResult<void>> {
     };
   }
 }
+
+/**
+ * 获取当前用户的待办列表（带统一日志）
+ */
+export const getTodos = wrapServerAction("获取待办列表", _getTodos);
+
+/**
+ * 添加新的待办事项（带统一日志）
+ */
+export const addTodo = wrapServerAction("添加待办", _addTodo);
+
+/**
+ * 切换待办事项的完成状态（带统一日志）
+ */
+export const toggleTodo = wrapServerAction("切换待办状态", _toggleTodo);
+
+/**
+ * 删除待办事项（带统一日志）
+ */
+export const deleteTodo = wrapServerAction("删除待办", _deleteTodo);

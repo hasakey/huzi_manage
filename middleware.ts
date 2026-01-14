@@ -9,9 +9,14 @@ export async function middleware(request: NextRequest) {
   const { supabaseResponse, user } = await updateSession(request);
   const { pathname } = request.nextUrl;
 
-  // 保护需要认证的路由（使用精确匹配，避免匹配所有路径）
-  const isProtectedRoute = pathname === "/";
-  const isAuthRoute = pathname === "/login";
+  // 认证路由
+  const isAuthRoute = pathname === "/login" || pathname === "/change-password";
+  
+  // 受保护的路由
+  const isProtectedRoute = pathname.startsWith("/dashboard") || pathname.startsWith("/admin");
+  
+  // 管理员路由
+  const isAdminRoute = pathname.startsWith("/admin");
 
   // 如果访问受保护的路由但未登录，重定向到登录页
   if (isProtectedRoute && !user) {
@@ -20,10 +25,13 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(redirectUrl);
   }
 
-  // 如果已登录但访问登录页，重定向到首页
+  // 如果已登录但访问登录页，根据角色重定向
   if (isAuthRoute && user) {
     const redirectUrl = request.nextUrl.clone();
-    redirectUrl.pathname = "/";
+    
+    // 获取用户角色（简化版，实际角色检查在页面组件中）
+    // 这里先重定向到 dashboard，页面组件会根据角色再次重定向
+    redirectUrl.pathname = "/dashboard";
     return NextResponse.redirect(redirectUrl);
   }
 

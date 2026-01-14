@@ -1,14 +1,22 @@
 "use client";
 
 import { logout } from "@/app/auth/actions";
+import { logServerAction } from "@/app/utils/client-action-logger";
 import { useTransition } from "react";
+import { useRouter } from "next/navigation";
 
 export default function LogoutButton() {
   const [isPending, startTransition] = useTransition();
+  const router = useRouter();
 
   const handleLogout = () => {
     startTransition(async () => {
-      await logout();
+      const result = await logServerAction("用户登出", logout);
+      
+      if (result.success) {
+        router.push("/login");
+        router.refresh();
+      }
     });
   };
 

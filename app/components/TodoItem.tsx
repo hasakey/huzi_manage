@@ -1,6 +1,7 @@
 "use client";
 
 import { toggleTodo, deleteTodo, type Todo } from "@/app/actions/todo-actions";
+import { logServerAction } from "@/app/utils/client-action-logger";
 import { useState, useTransition } from "react";
 
 interface TodoItemProps {
@@ -13,7 +14,8 @@ export default function TodoItem({ todo }: TodoItemProps) {
 
   const handleToggle = () => {
     startTransition(async () => {
-      const result = await toggleTodo(todo.id, isComplete);
+      const result = await logServerAction("切换待办状态", toggleTodo, todo.id, isComplete);
+      
       if (result.success) {
         setIsComplete(!isComplete);
       } else {
@@ -29,7 +31,8 @@ export default function TodoItem({ todo }: TodoItemProps) {
     }
 
     startTransition(async () => {
-      const result = await deleteTodo(todo.id);
+      const result = await logServerAction("删除待办", deleteTodo, todo.id);
+      
       if (!result.success) {
         console.error(result.error);
         alert(result.error);

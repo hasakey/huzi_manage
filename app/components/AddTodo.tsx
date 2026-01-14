@@ -1,6 +1,7 @@
 "use client";
 
 import { addTodo } from "@/app/actions/todo-actions";
+import { logServerAction } from "@/app/utils/client-action-logger";
 import { useFormStatus } from "react-dom";
 import { useRef } from "react";
 
@@ -22,7 +23,7 @@ export default function AddTodo() {
   const formRef = useRef<HTMLFormElement>(null);
 
   async function handleSubmit(formData: FormData) {
-    const result = await addTodo(formData);
+    const result = await logServerAction("添加待办", addTodo, formData);
     if (result.success) {
       formRef.current?.reset();
     } else {

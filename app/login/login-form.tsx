@@ -1,10 +1,12 @@
 "use client";
 
-import { login, signup } from "@/app/auth/actions";
+import { login } from "@/app/auth/actions";
+import { logServerAction } from "@/app/utils/client-action-logger";
 import { useState, useTransition } from "react";
 import { useFormStatus } from "react-dom";
+import { useRouter } from "next/navigation";
 
-function SubmitButton({ isLogin }: { isLogin: boolean }) {
+function SubmitButton() {
   const { pending } = useFormStatus();
 
   return (
@@ -13,24 +15,29 @@ function SubmitButton({ isLogin }: { isLogin: boolean }) {
       disabled={pending}
       className="w-full rounded-lg bg-blue-600 px-4 py-2.5 font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
     >
-      {pending ? "处理中..." : isLogin ? "登录" : "注册"}
+      {pending ? "登录中..." : "登录"}
     </button>
   );
 }
 
 export default function LoginForm() {
-  const [isLogin, setIsLogin] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isPending, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
+  const router = useRouter();
 
-  async function handleSubmit(formData: FormData, action: typeof login | typeof signup) {
+  async function handleSubmit(formData: FormData) {
     setError(null);
+    
     startTransition(async () => {
-      const result = await action(formData);
-      if (!result.success) {
-        setError(result.error || "操作失败");
+      const result = await logServerAction("用户登录", login, formData);
+      
+      if (result.success) {
+        // 成功后在客户端进行重定向
+        router.push("/");
+        router.refresh(); // 刷新页面以更新数据
+      } else {
+        setError(result.error || "登录失败");
       }
-      // 如果成功，Server Action 会重定向，所以这里不需要处理成功情况
     });
   }
 
@@ -40,44 +47,8 @@ export default function LoginForm() {
         <div className="rounded-lg border border-gray-200 bg-white p-8 shadow-sm">
           {/* 标题 */}
           <div className="mb-8 text-center">
-            <h1 className="text-3xl font-bold text-gray-900">
-              {isLogin ? "登录" : "注册"}
-            </h1>
-            <p className="mt-2 text-sm text-gray-600">
-              {isLogin ? "欢迎回来" : "创建新账户"}
-            </p>
-          </div>
-
-          {/* 切换按钮 */}
-          <div className="mb-6 flex rounded-lg border border-gray-200 bg-gray-50 p-1">
-            <button
-              type="button"
-              onClick={() => {
-                setIsLogin(true);
-                setError(null);
-              }}
-              className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
-                isLogin
-                  ? "bg-white text-gray-900 shadow-sm"
-                  : "text-gray-600 hover:text-gray-900"
-              }`}
-            >
-              登录
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setIsLogin(false);
-                setError(null);
-              }}
-              className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
-                !isLogin
-                  ? "bg-white text-gray-900 shadow-sm"
-                  : "text-gray-600 hover:text-gray-900"
-              }`}
-            >
-              注册
-            </button>
+            <h1 className="text-3xl font-bold text-gray-900">登录</h1>
+            <p className="mt-2 text-sm text-gray-600">欢迎回来</p>
           </div>
 
           {/* 错误提示 */}
@@ -88,88 +59,51 @@ export default function LoginForm() {
           )}
 
           {/* 登录表单 */}
-          {isLogin && (
-            <form action={(formData) => handleSubmit(formData, login)}>
-              <div className="space-y-4">
-                <div>
-                  <label
-                    htmlFor="login-email"
-                    className="block text-sm font-medium text-gray-700 mb-1.5"
-                  >
-                    邮箱
-                  </label>
-                  <input
-                    id="login-email"
-                    type="email"
-                    name="email"
-                    required
-                    placeholder="your@email.com"
-                    className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-                <div>
-                  <label
-                    htmlFor="login-password"
-                    className="block text-sm font-medium text-gray-700 mb-1.5"
-                  >
-                    密码
-                  </label>
-                  <input
-                    id="login-password"
-                    type="password"
-                    name="password"
-                    required
-                    placeholder="••••••••"
-                    className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-                <SubmitButton isLogin={true} />
+          <form action={handleSubmit}>
+            <div className="space-y-4">
+              <div>
+                <label
+                  htmlFor="email"
+                  className="block text-sm font-medium text-gray-700 mb-1.5"
+                >
+                  邮箱
+                </label>
+                <input
+                  id="email"
+                  type="email"
+                  name="email"
+                  required
+                  placeholder="your@email.com"
+                  className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
               </div>
-            </form>
-          )}
-
-          {/* 注册表单 */}
-          {!isLogin && (
-            <form action={(formData) => handleSubmit(formData, signup)}>
-              <div className="space-y-4">
-                <div>
-                  <label
-                    htmlFor="signup-email"
-                    className="block text-sm font-medium text-gray-700 mb-1.5"
-                  >
-                    邮箱
-                  </label>
-                  <input
-                    id="signup-email"
-                    type="email"
-                    name="email"
-                    required
-                    placeholder="your@email.com"
-                    className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-                <div>
-                  <label
-                    htmlFor="signup-password"
-                    className="block text-sm font-medium text-gray-700 mb-1.5"
-                  >
-                    密码
-                  </label>
-                  <input
-                    id="signup-password"
-                    type="password"
-                    name="password"
-                    required
-                    minLength={6}
-                    placeholder="至少 6 位"
-                    className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                  <p className="mt-1 text-xs text-gray-500">密码长度至少为 6 位</p>
-                </div>
-                <SubmitButton isLogin={false} />
+              <div>
+                <label
+                  htmlFor="password"
+                  className="block text-sm font-medium text-gray-700 mb-1.5"
+                >
+                  密码
+                </label>
+                <input
+                  id="password"
+                  type="password"
+                  name="password"
+                  required
+                  placeholder="••••••••"
+                  className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
               </div>
-            </form>
-          )}
+              <div className="flex items-center justify-between">
+                <a
+                  href="/change-password"
+                  className="text-sm text-blue-600 hover:text-blue-700"
+                >
+                  修改密码
+                </a>
+              </div>
+              <SubmitButton />
+            </div>
+          </form>
         </div>
       </div>
     </main>
